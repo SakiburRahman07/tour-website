@@ -127,6 +127,9 @@ export default function AdminPanel() {
   const [userPaymentMethod, setUserPaymentMethod] = useState('CASH');
   const [userPaymentNote, setUserPaymentNote] = useState('');
   const [isSubmittingUserPayment, setIsSubmittingUserPayment] = useState(false);
+  const [globalTotalAmount, setGlobalTotalAmount] = useState('');
+  const [isUpdatingGlobalAmount, setIsUpdatingGlobalAmount] = useState(false);
+  const [globalUpdateError, setGlobalUpdateError] = useState('');
   const router = useRouter();
 
   // Check for existing session on component mount
@@ -490,6 +493,7 @@ export default function AdminPanel() {
     { id: 'tickets', label: 'টিকেট', icon: Ticket },
     { id: 'activities', label: 'কার্যক্রম', icon: Calendar },
     { id: 'user-info', label: 'ব্যবহারকারী তথ্য', icon: User },
+    { id: 'update-amount', label: 'টাকার পরিমাণ আপডেট', icon: DollarSign },
   ];
 
   const renderContent = () => {
@@ -1293,6 +1297,104 @@ export default function AdminPanel() {
           </div>
         );
 
+      case 'update-amount':
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center">
+                  <DollarSign className="h-6 w-6 mr-2 text-purple-600" />
+                  সকল ব্যবহারকারীর মোট টাকা আপডেট করুন
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <h3 className="font-medium text-blue-800">বর্তমান তথ্য</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3">
+                      <div className="p-3 bg-white rounded shadow-sm">
+                        <p className="text-sm text-gray-600">মোট ব্যবহারকারী</p>
+                        <p className="text-xl font-bold">{registrations.length} জন</p>
+                      </div>
+                      <div className="p-3 bg-white rounded shadow-sm">
+                        <p className="text-sm text-gray-600">বর্তমান মোট টাকা</p>
+                        <p className="text-xl font-bold text-purple-700">
+                          {registrations.length > 0 ? formatCurrency(registrations[0].totalAmount) : '৳ 0.00'}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-white rounded shadow-sm">
+                        <p className="text-sm text-gray-600">মোট জমা হয়েছে</p>
+                        <p className="text-xl font-bold text-green-700">
+                          {formatCurrency(registrations.reduce((sum, reg) => sum + reg.paidAmount, 0))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h3 className="text-lg font-medium text-yellow-800 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      সতর্কতা
+                    </h3>
+                    <ul className="mt-2 space-y-1 text-yellow-800 list-disc list-inside">
+                      <li>এই পরিবর্তন সকল ব্যবহারকারীর মোট টাকার পরিমাণ একসাথে পরিবর্তন করবে</li>
+                      <li>পূর্বে জমা দেওয়া টাকার পরিমাণ পরিবর্তন হবে না</li>
+                      <li>বাকি টাকার পরিমাণ স্বয়ংক্রিয়ভাবে গণনা করা হবে</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="border p-5 rounded-lg">
+                    <h3 className="text-lg font-medium mb-4">নতুন মোট টাকা সেট করুন</h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="newGlobalAmount" className="text-base">নতুন মোট টাকা (সকল ব্যবহারকারীর জন্য)</Label>
+                        <div className="flex mt-2">
+                          <Input
+                            id="newGlobalAmount"
+                            type="number"
+                            placeholder="যেমন: 4500"
+                            value={globalTotalAmount}
+                            onChange={(e) => {
+                              setGlobalTotalAmount(e.target.value);
+                              setGlobalUpdateError('');
+                            }}
+                            className="text-lg py-6"
+                          />
+                        </div>
+                        {globalTotalAmount && !isNaN(parseFloat(globalTotalAmount)) && parseFloat(globalTotalAmount) > 0 && (
+                          <p className="text-green-700 mt-2">
+                            নতুন মোট টাকা: {formatCurrency(parseFloat(globalTotalAmount))}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <Button 
+                        onClick={handleUpdateAllTotalAmounts}
+                        disabled={!globalTotalAmount || isUpdatingGlobalAmount || 
+                          isNaN(parseFloat(globalTotalAmount)) || parseFloat(globalTotalAmount) <= 0}
+                        isLoading={isUpdatingGlobalAmount}
+                        className="w-full py-6 text-lg"
+                      >
+                        {isUpdatingGlobalAmount ? 'আপডেট হচ্ছে...' : 'সকল ব্যবহারকারীর টাকা আপডেট করুন'}
+                      </Button>
+                      
+                      {globalUpdateError && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700">
+                          <p className="font-medium">সমস্যা হয়েছে:</p>
+                          <p>{globalUpdateError}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -1685,6 +1787,56 @@ export default function AdminPanel() {
       setUserSearchError('পেমেন্ট প্রক্রিয়াকরণে সমস্যা হয়েছে');
     } finally {
       setIsSubmittingUserPayment(false);
+    }
+  };
+
+  const handleUpdateAllTotalAmounts = async () => {
+    if (!globalTotalAmount) {
+      setGlobalUpdateError('নতুন মোট টাকার পরিমাণ দিন');
+      return;
+    }
+
+    const newAmount = parseFloat(globalTotalAmount);
+    if (isNaN(newAmount) || newAmount <= 0) {
+      setGlobalUpdateError('সঠিক পরিমাণ দিন');
+      return;
+    }
+
+    // Ask for confirmation
+    if (!confirm(`আপনি কি নিশ্চিত যে আপনি সকল রেজিস্ট্রেশনের (${registrations.length} জন) মোট টাকার পরিমাণ ${formatCurrency(newAmount)} করতে চান?`)) {
+      return;
+    }
+
+    setIsUpdatingGlobalAmount(true);
+    setGlobalUpdateError('');
+    
+    try {
+      const response = await fetch('/api/tour-registration/update-all-amounts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          totalAmount: newAmount,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Refresh registration data
+        await fetchData();
+        setGlobalTotalAmount('');
+        alert('সকল রেজিস্ট্রেশনের মোট টাকার পরিমাণ সফলভাবে আপডেট করা হয়েছে');
+      } else {
+        console.error('API Error:', data);
+        setGlobalUpdateError(`টাকা আপডেট করতে সমস্যা হয়েছে: ${data.error || 'অজানা সমস্যা'}`);
+      }
+    } catch (error) {
+      console.error('Error updating global total amount:', error);
+      setGlobalUpdateError(`টাকা আপডেট করতে সমস্যা হয়েছে: ${error.message || 'সার্ভারে সমস্যা'}`);
+    } finally {
+      setIsUpdatingGlobalAmount(false);
     }
   };
 
