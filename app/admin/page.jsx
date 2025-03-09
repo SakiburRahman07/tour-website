@@ -21,7 +21,11 @@ import {
   Link,
   Calendar,
   Edit,
-  Trash2
+  Trash2,
+  User,
+  Phone,
+  MapPin,
+  Search
 } from "lucide-react";
 import {
   Sheet,
@@ -114,6 +118,15 @@ export default function AdminPanel() {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [editingActivity, setEditingActivity] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [userSearchPhone, setUserSearchPhone] = useState('');
+  const [userInfo, setUserInfo] = useState(null);
+  const [userTransactions, setUserTransactions] = useState([]);
+  const [isSearchingUser, setIsSearchingUser] = useState(false);
+  const [userSearchError, setUserSearchError] = useState('');
+  const [userPaymentAmount, setUserPaymentAmount] = useState('');
+  const [userPaymentMethod, setUserPaymentMethod] = useState('CASH');
+  const [userPaymentNote, setUserPaymentNote] = useState('');
+  const [isSubmittingUserPayment, setIsSubmittingUserPayment] = useState(false);
   const router = useRouter();
 
   // Check for existing session on component mount
@@ -476,6 +489,7 @@ export default function AdminPanel() {
     { id: 'transactions', label: 'লেনদেন', icon: History },
     { id: 'tickets', label: 'টিকেট', icon: Ticket },
     { id: 'activities', label: 'কার্যক্রম', icon: Calendar },
+    { id: 'user-info', label: 'ব্যবহারকারী তথ্য', icon: User },
   ];
 
   const renderContent = () => {
@@ -981,6 +995,304 @@ export default function AdminPanel() {
           </div>
         );
 
+      case 'user-info':
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>ব্যবহারকারী তথ্য খুঁজুন</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>ব্যবহারকারী বাছাই করুন</Label>
+                    <Select
+                      onValueChange={(value) => {
+                        const selectedUser = registrations.find(user => user.id.toString() === value);
+                        if (selectedUser) {
+                          setUserSearchPhone(selectedUser.phone);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="ব্যবহারকারী বাছাই করুন" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {registrations.map((user) => (
+                          <SelectItem key={user.id} value={user.id.toString()}>
+                            {user.name} - {user.phone}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="userPhone">ফোন নম্বর</Label>
+                    <div className="relative">
+                      <Input
+                        id="userPhone"
+                        type="tel"
+                        value={userSearchPhone}
+                        onChange={(e) => setUserSearchPhone(e.target.value)}
+                        placeholder="ফোন নম্বর দিন"
+                        className="pl-10"
+                      />
+                      <Phone className="absolute left-3 top-2.5 h-5 w-5 text-purple-500" />
+                    </div>
+                  </div>
+                  
+                  {userSearchError && (
+                    <p className="text-red-600 text-center font-medium">{userSearchError}</p>
+                  )}
+                  
+                  <Button
+                    onClick={handleUserSearch}
+                    className="w-full"
+                    isLoading={isSearchingUser}
+                    disabled={isSearchingUser}
+                  >
+                    {isSearchingUser ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        খোঁজা হচ্ছে...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center">
+                        <Search className="mr-2 h-5 w-5" />
+                        তথ্য খুঁজুন
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {userInfo && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* User Info Card */}
+                <div className="lg:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <User className="h-5 w-5 mr-2 text-purple-600" />
+                        ব্যক্তিগত তথ্য
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start space-x-3">
+                          <User className="h-5 w-5 text-purple-600 mt-1" />
+                          <div>
+                            <p className="font-medium text-gray-700">নাম</p>
+                            <p className="text-gray-900">{userInfo.name}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-3">
+                          <Phone className="h-5 w-5 text-purple-600 mt-1" />
+                          <div>
+                            <p className="font-medium text-gray-700">ফোন নম্বর</p>
+                            <p className="text-gray-900">{userInfo.phone}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-3">
+                          <MapPin className="h-5 w-5 text-purple-600 mt-1" />
+                          <div>
+                            <p className="font-medium text-gray-700">ঠিকানা</p>
+                            <p className="text-gray-900">{userInfo.address}</p>
+                          </div>
+                        </div>
+                        
+                        {userInfo.ticketLink && (
+                          <div className="flex items-start space-x-3">
+                            <Ticket className="h-5 w-5 text-purple-600 mt-1" />
+                            <div>
+                              <p className="font-medium text-gray-700">টিকেট</p>
+                              <a 
+                                href={userInfo.ticketLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-600 hover:text-purple-800 flex items-center transition-colors"
+                              >
+                                <Link className="h-4 w-4 mr-1" />
+                                টিকেট ডাউনলোড করুন
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="pt-4 border-t border-gray-100">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <p className="font-medium text-gray-700">মোট টাকা</p>
+                            <p className="text-xl font-semibold text-purple-600">
+                              {formatCurrency(userInfo.totalAmount)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-700">জমা দেওয়া</p>
+                            <p className="text-xl font-semibold text-green-600">
+                              {formatCurrency(userInfo.paidAmount)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-700">বাকি টাকা</p>
+                            <p className="text-xl font-semibold text-red-600">
+                              {formatCurrency(userInfo.dueAmount)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Ticket Information */}
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Ticket className="h-5 w-5 mr-2 text-purple-600" />
+                        টিকেট তথ্য
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">টিকেট নম্বর</span>
+                          <span className="font-medium text-purple-600">#{userInfo.id.toString().padStart(4, '0')}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">স্ট্যাটাস</span>
+                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            {userInfo.status}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Sidebar */}
+                <div>
+                  {/* Payment Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
+                        টাকা জমা দিন
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>টাকার পরিমাণ</Label>
+                        <Input
+                          type="number"
+                          value={userPaymentAmount}
+                          onChange={(e) => setUserPaymentAmount(e.target.value)}
+                          placeholder="টাকার পরিমাণ দিন"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>পেমেন্ট মাধ্যম</Label>
+                        <Select
+                          value={userPaymentMethod}
+                          onValueChange={setUserPaymentMethod}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="পেমেন্ট মাধ্যম বাছাই করুন" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CASH">ক্যাশ</SelectItem>
+                            <SelectItem value="BKASH">বিকাশ</SelectItem>
+                            <SelectItem value="NAGAD">নগদ</SelectItem>
+                            <SelectItem value="ROCKET">রকেট</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>নোট (ঐচ্ছিক)</Label>
+                        <Input
+                          value={userPaymentNote}
+                          onChange={(e) => setUserPaymentNote(e.target.value)}
+                          placeholder="পেমেন্ট সম্পর্কে নোট লিখুন"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleUserPayment}
+                        className="w-full"
+                        isLoading={isSubmittingUserPayment}
+                        disabled={isSubmittingUserPayment}
+                      >
+                        {isSubmittingUserPayment ? 'প্রক্রিয়াকরণ হচ্ছে...' : 'টাকা জমা দিন'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Transaction History */}
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <History className="h-5 w-5 mr-2 text-purple-600" />
+                        লেনদেনের ইতিহাস
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {userTransactions.map((transaction) => (
+                          <div
+                            key={transaction.id}
+                            className={`flex items-center justify-between p-4 rounded-lg shadow-sm transition-all ${
+                              transaction.status === 'PENDING'
+                                ? 'bg-yellow-50 border border-yellow-200 hover:bg-yellow-100'
+                                : transaction.status === 'APPROVED'
+                                ? 'bg-green-50 border border-green-200 hover:bg-green-100'
+                                : 'bg-red-50 border border-red-200 hover:bg-red-100'
+                            }`}
+                          >
+                            <div>
+                              <p className="font-medium text-gray-900">{formatCurrency(transaction.amount)}</p>
+                              <p className="text-sm text-gray-600">
+                                {formatDate(transaction.paymentDate)}
+                              </p>
+                              {transaction.note && (
+                                <p className="text-sm text-gray-700 mt-1">
+                                  {transaction.note}
+                                </p>
+                              )}
+                              <p className={`text-sm font-medium mt-1 ${
+                                transaction.status === 'PENDING'
+                                  ? 'text-yellow-700'
+                                  : transaction.status === 'APPROVED'
+                                  ? 'text-green-700'
+                                  : 'text-red-700'
+                              }`}>
+                                {transaction.status === 'PENDING' && 'অপেক্ষমান'}
+                                {transaction.status === 'APPROVED' && 'অনুমোদিত'}
+                                {transaction.status === 'REJECTED' && 'বাতিল'}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-purple-600">{transaction.paymentMethod}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {userTransactions.length === 0 && (
+                          <p className="text-center text-gray-500 py-4">কোন লেনদেন নেই</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
       default:
         return null;
     }
@@ -1303,6 +1615,78 @@ export default function AdminPanel() {
         ))}
     </div>
   );
+
+  const handleUserSearch = async () => {
+    if (!userSearchPhone.trim()) {
+      setUserSearchError('ফোন নাম্বার দিন');
+      return;
+    }
+
+    setIsSearchingUser(true);
+    setUserSearchError('');
+    setUserInfo(null);
+    setUserTransactions([]);
+
+    try {
+      const response = await fetch(`/api/tour-registration/search?phone=${userSearchPhone}`);
+      const data = await response.json();
+
+      if (response.ok && data) {
+        setUserInfo(data);
+        // Fetch transactions for this registration
+        const transResponse = await fetch(`/api/transactions/${data.id}`);
+        if (transResponse.ok) {
+          const transData = await transResponse.json();
+          setUserTransactions(transData);
+        }
+      } else {
+        setUserSearchError('কোন তথ্য পাওয়া যায়নি');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setUserSearchError('তথ্য খোঁজার সময় সমস্যা হয়েছে');
+    } finally {
+      setIsSearchingUser(false);
+    }
+  };
+
+  const handleUserPayment = async () => {
+    if (!userInfo || !userPaymentAmount || !userPaymentMethod) {
+      setUserSearchError('সব তথ্য দিন');
+      return;
+    }
+
+    setIsSubmittingUserPayment(true);
+    try {
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          registrationId: userInfo.id,
+          amount: parseFloat(userPaymentAmount),
+          paymentMethod: userPaymentMethod,
+          note: userPaymentNote,
+          description: `Payment via ${userPaymentMethod}`,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh user info and transactions
+        handleUserSearch();
+        setUserPaymentAmount('');
+        setUserPaymentNote('');
+      } else {
+        setUserSearchError('পেমেন্ট প্রক্রিয়াকরণে সমস্যা হয়েছে');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      setUserSearchError('পেমেন্ট প্রক্রিয়াকরণে সমস্যা হয়েছে');
+    } finally {
+      setIsSubmittingUserPayment(false);
+    }
+  };
 
   if (isLoading) {
     return (

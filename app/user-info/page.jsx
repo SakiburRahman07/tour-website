@@ -39,10 +39,6 @@ export default function UserInfo() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('CASH');
-  const [paymentNote, setPaymentNote] = useState('');
-  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
 
   // Fetch registered users on component mount
   useEffect(() => {
@@ -91,44 +87,6 @@ export default function UserInfo() {
       setError('তথ্য খোঁজার সময় সমস্যা হয়েছে');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePayment = async () => {
-    if (!userInfo || !paymentAmount || !paymentMethod) {
-      setError('সব তথ্য দিন');
-      return;
-    }
-
-    setIsSubmittingPayment(true);
-    try {
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          registrationId: userInfo.id,
-          amount: parseFloat(paymentAmount),
-          paymentMethod,
-          note: paymentNote,
-          description: `Payment via ${paymentMethod}`,
-        }),
-      });
-
-      if (response.ok) {
-        // Refresh user info and transactions
-        handleSearch();
-        setPaymentAmount('');
-        setPaymentNote('');
-      } else {
-        setError('পেমেন্ট প্রক্রিয়াকরণে সমস্যা হয়েছে');
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      setError('পেমেন্ট প্রক্রিয়াকরণে সমস্যা হয়েছে');
-    } finally {
-      setIsSubmittingPayment(false);
     }
   };
 
@@ -324,62 +282,6 @@ export default function UserInfo() {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-6"
               >
-                {/* Payment Section */}
-                <Card className="shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-purple-900">
-                      <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
-                      টাকা জমা দিন
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">টাকার পরিমাণ</label>
-                      <Input
-                        type="number"
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(e.target.value)}
-                        placeholder="টাকার পরিমাণ দিন"
-                        className="border-gray-200 focus:ring-purple-500 focus:border-purple-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">পেমেন্ট মাধ্যম</label>
-                      <Select
-                        value={paymentMethod}
-                        onValueChange={setPaymentMethod}
-                      >
-                        <SelectTrigger className="border-gray-200 focus:ring-purple-500 focus:border-purple-500">
-                          <SelectValue placeholder="পেমেন্ট মাধ্যম বাছাই করুন" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="CASH">ক্যাশ</SelectItem>
-                          <SelectItem value="BKASH">বিকাশ</SelectItem>
-                          <SelectItem value="NAGAD">নগদ</SelectItem>
-                          <SelectItem value="ROCKET">রকেট</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">নোট (ঐচ্ছিক)</label>
-                      <Input
-                        value={paymentNote}
-                        onChange={(e) => setPaymentNote(e.target.value)}
-                        placeholder="পেমেন্ট সম্পর্কে নোট লিখুন"
-                        className="border-gray-200 focus:ring-purple-500 focus:border-purple-500"
-                      />
-                    </div>
-                    <Button
-                      onClick={handlePayment}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-colors"
-                      isLoading={isSubmittingPayment}
-                      disabled={isSubmittingPayment}
-                    >
-                      {isSubmittingPayment ? 'প্রক্রিয়াকরণ হচ্ছে...' : 'টাকা জমা দিন'}
-                    </Button>
-                  </CardContent>
-                </Card>
-
                 {/* Transaction History */}
                 <Card className="shadow-lg">
                   <CardHeader>
