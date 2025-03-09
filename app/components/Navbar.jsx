@@ -43,6 +43,7 @@ import {
   Moon,
   Clock
 } from "lucide-react";
+import { ThemeToggle } from './theme-toggle';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -123,18 +124,7 @@ export default function Navbar() {
               {/* User Profile & Theme Toggle */}
               <div className="flex items-center space-x-4">
                 {mounted && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    className="rounded-full hover:bg-purple-50"
-                  >
-                    {theme === 'dark' ? (
-                      <Sun className="h-5 w-5 text-purple-600" />
-                    ) : (
-                      <Moon className="h-5 w-5 text-purple-600" />
-                    )}
-                  </Button>
+                  <ThemeToggle />
                 )}
 
                 <DropdownMenu>
@@ -169,18 +159,7 @@ export default function Navbar() {
               </Button>
 
               {mounted && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="rounded-full hover:bg-purple-50"
-                >
-                  {theme === 'dark' ? (
-                    <Sun className="h-5 w-5 text-purple-600" />
-                  ) : (
-                    <Moon className="h-5 w-5 text-purple-600" />
-                  )}
-                </Button>
+                <ThemeToggle />
               )}
 
               <Sheet>
