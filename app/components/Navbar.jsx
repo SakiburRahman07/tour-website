@@ -6,11 +6,9 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
-  NavigationMenuContent,
+  NavigationMenuList,
   NavigationMenuItem,
   NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,17 +37,17 @@ import {
   FileText, 
   Info, 
   LogIn,
-  Sun,
-  Moon,
-  Clock
+  Clock,
+  X
 } from "lucide-react";
 import { ThemeToggle } from './theme-toggle';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -73,17 +71,24 @@ export default function Navbar() {
   return (
     <>
       <div className="h-16" /> {/* Spacer for fixed navbar */}
-      <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-background/80 backdrop-blur-lg shadow-md' : 'bg-background/60 backdrop-blur-sm'
-      }`}>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-background/80 backdrop-blur-lg shadow-lg'
+            : 'bg-background/60 backdrop-blur-sm'
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 z-50">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3 }}
+                className="relative"
               >
                 <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
                   ট্যুর প্ল্যানার
@@ -123,10 +128,7 @@ export default function Navbar() {
 
               {/* User Profile & Theme Toggle */}
               <div className="flex items-center space-x-4">
-                {mounted && (
-                  <ThemeToggle />
-                )}
-
+                {mounted && <ThemeToggle />}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="rounded-full border-purple-200">
@@ -148,7 +150,7 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Navigation */}
-            <div className="flex lg:hidden items-center space-x-4">
+            <div className="flex lg:hidden items-center space-x-3">
               <Button
                 variant="ghost"
                 size="icon"
@@ -158,39 +160,45 @@ export default function Navbar() {
                 <Search className="h-5 w-5 text-purple-600" />
               </Button>
 
-              {mounted && (
-                <ThemeToggle />
-              )}
+              {mounted && <ThemeToggle />}
 
-              <Sheet>
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full hover:bg-purple-50">
-                    <Menu className="h-5 w-5 text-purple-600" />
+                    {isMobileMenuOpen ? (
+                      <X className="h-5 w-5 text-purple-600" />
+                    ) : (
+                      <Menu className="h-5 w-5 text-purple-600" />
+                    )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0">
+                  <SheetHeader className="p-6 border-b">
                     <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
                       ট্যুর প্ল্যানার
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="mt-8 space-y-6">
+                  <div className="py-6 px-4 space-y-2">
                     {navLinks.map((link) => (
                       <Link 
                         key={link.href} 
                         href={link.href}
-                        className={`flex items-center space-x-2 text-lg font-medium p-2 rounded-lg transition-colors duration-200 hover:bg-purple-50 ${
-                          link.href === '/emergency' ? 'hover:bg-red-50 hover:text-red-600' : 'hover:text-purple-600'
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`flex items-center space-x-3 text-lg font-medium p-3 rounded-lg transition-colors duration-200 hover:bg-purple-50 ${
+                          link.href === '/emergency' 
+                            ? 'hover:bg-red-50 hover:text-red-600' 
+                            : 'hover:text-purple-600'
                         }`}
                       >
                         <link.icon className="h-5 w-5" />
                         <span>{link.label}</span>
                       </Link>
                     ))}
-                    <div className="pt-4 border-t">
+                    <div className="pt-4 border-t mt-4">
                       <Link 
                         href="/admin"
-                        className="flex items-center space-x-2 text-lg font-medium p-2 rounded-lg transition-colors duration-200 hover:bg-purple-50 hover:text-purple-600"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center space-x-3 text-lg font-medium p-3 rounded-lg transition-colors duration-200 hover:bg-purple-50 hover:text-purple-600"
                       >
                         <LogIn className="h-5 w-5" />
                         <span>অ্যাডমিন লগইন</span>
@@ -212,16 +220,19 @@ export default function Navbar() {
                 transition={{ duration: 0.2 }}
                 className="lg:hidden py-4"
               >
-                <Input
-                  type="search"
-                  placeholder="সার্চ করুন..."
-                  className="w-full rounded-full border-2 border-purple-100 focus:border-purple-300 bg-background/50"
-                />
+                <div className="relative">
+                  <Input
+                    type="search"
+                    placeholder="সার্চ করুন..."
+                    className="w-full rounded-full border-2 border-purple-100 focus:border-purple-300 bg-background/50 pl-10"
+                  />
+                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </motion.nav>
     </>
   );
 } 
