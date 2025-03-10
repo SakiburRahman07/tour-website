@@ -20,36 +20,36 @@ export default function Hero() {
         />
       </div>
       
-      <div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <div className="relative z-20 h-full flex flex-col items-center justify-start sm:justify-center text-center px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="space-y-4 sm:space-y-8"
+          className="space-y-6 pt-32 sm:pt-0" // Added padding top only for mobile
         >
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight px-2">
             আপনার স্বপ্নের ট্যুর প্ল্যান করুন
           </h1>
           
-          <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed px-2">
             কক্সবাজার থেকে বান্দরবান - একটি অবিস্মরণীয় অভিজ্ঞতার জন্য আজই যোগাযোগ করুন
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
             <Button 
               onClick={() => router.push('/registration')}
               size="lg"
-              className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2 group"
+              className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white px-8 py-3 text-lg rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2 group"
             >
               <span>রেজিস্ট্রেশন করুন</span>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transform group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
             </Button>
 
             <Button 
               onClick={() => router.push('/schedule')}
               size="lg"
               variant="outline"
-              className="w-full sm:w-auto border-2 border-white text-white hover:bg-white/10 px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg rounded-full transform transition-all duration-300 hover:scale-105"
+              className="w-full sm:w-auto border-2 border-white text-white hover:bg-white/10 px-8 py-3 text-lg rounded-full transform transition-all duration-300 hover:scale-105"
             >
               আমাদের কার্যক্রম
             </Button>
@@ -59,19 +59,19 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-8 mt-6 sm:mt-8 max-w-3xl mx-auto"
+            className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-8 max-w-3xl mx-auto px-4"
           >
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-6">
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold">১০০+</h3>
-              <p className="text-xs sm:text-sm md:text-base text-gray-200">সফল ট্যুর</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6">
+              <h3 className="text-xl sm:text-2xl font-bold">১০০+</h3>
+              <p className="text-sm sm:text-base text-gray-200">সফল ট্যুর</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-6">
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold">৫০০+</h3>
-              <p className="text-xs sm:text-sm md:text-base text-gray-200">সন্তুষ্ট গ্রাহক</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6">
+              <h3 className="text-xl sm:text-2xl font-bold">৫০০+</h3>
+              <p className="text-sm sm:text-base text-gray-200">সন্তুষ্ট গ্রাহক</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-6 col-span-2 sm:col-span-1">
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold">২৪/৭</h3>
-              <p className="text-xs sm:text-sm md:text-base text-gray-200">সাপোর্ট</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 col-span-2 sm:col-span-1">
+              <h3 className="text-xl sm:text-2xl font-bold">২৪/৭</h3>
+              <p className="text-sm sm:text-base text-gray-200">সাপোর্ট</p>
             </div>
           </motion.div>
         </motion.div>

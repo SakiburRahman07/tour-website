@@ -7,9 +7,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Calendar, Users, Clock, User, DollarSign, ArrowRight } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   const features = [
     {
       icon: <MapPin className="w-6 h-6" />,
@@ -60,72 +77,134 @@ export default function Home() {
     }
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${
+      theme === 'dark' ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900' : 'bg-gradient-to-br from-purple-50 via-white to-blue-50'
+    }`}>
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-purple-600 transform-origin-0"
+        style={{ scaleX }}
+      />
       <Navbar />
       <Hero />
       
-      <main className="flex-grow">
-        <div className="max-w-6xl mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+      <main className="flex-grow relative">
+        {/* Animated background shapes */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-16 relative z-10">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
+          >
             আমাদের বৈশিষ্ট্য সমূহ
-          </h2>
+          </motion.h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
             {features.map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-3 bg-purple-100 rounded-full text-purple-600">
-                      {feature.icon}
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                whileHover={{ scale: 1.05 }}
+                className="group"
+              >
+                <Card className="backdrop-blur-lg bg-white/80 dark:bg-gray-800/80 border-0 shadow-lg hover:shadow-2xl transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <motion.div 
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                        className="p-4 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full text-white"
+                      >
+                        {feature.icon}
+                      </motion.div>
+                      <h3 className="font-semibold text-xl text-gray-800 dark:text-white">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300">
+                        {feature.description}
+                      </p>
                     </div>
-                    <h3 className="font-semibold text-lg text-gray-800">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm">
-                      {feature.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mt-16"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mt-24"
           >
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               আপনার সুবিধার্থে
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {cards.map((card, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: card.delay }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: card.delay }}
+                  whileHover={{ y: -10 }}
                 >
                   <Link href={card.href}>
-                    <Card className={`group hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden border-${card.color}-100 hover:border-${card.color}-200`}>
-                      <CardHeader className={`bg-${card.color}-50 transition-colors duration-300 group-hover:bg-${card.color}-100`}>
-                        <div className={`p-3 bg-${card.color}-100 rounded-full text-${card.color}-600 w-fit group-hover:scale-110 transition-transform duration-300`}>
+                    <Card className="group relative overflow-hidden backdrop-blur-lg bg-white/80 dark:bg-gray-800/80 border-0 shadow-lg hover:shadow-2xl transition-all duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <CardHeader className="relative z-10">
+                        <motion.div 
+                          whileHover={{ scale: 1.1 }}
+                          className={`p-4 bg-gradient-to-br from-${card.color}-500 to-${card.color}-600 rounded-full text-white w-fit`}
+                        >
                           {card.icon}
-                        </div>
+                        </motion.div>
                       </CardHeader>
-                      <CardContent className="p-6">
-                        <CardTitle className="text-xl mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                      <CardContent className="relative z-10 p-6">
+                        <CardTitle className="text-2xl mb-3 text-gray-800 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
                           {card.title}
                         </CardTitle>
-                        <p className="text-gray-600 text-sm mb-4">
+                        <p className="text-gray-600 dark:text-gray-300 mb-4">
                           {card.description}
                         </p>
-                        <div className={`flex items-center text-${card.color}-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                        <motion.div 
+                          initial={{ x: -10, opacity: 0 }}
+                          whileInView={{ x: 0, opacity: 1 }}
+                          className="flex items-center text-purple-600 dark:text-purple-400 font-medium"
+                        >
                           <span>আরও দেখুন</span>
-                          <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
-                        </div>
+                          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
+                        </motion.div>
                       </CardContent>
                     </Card>
                   </Link>
@@ -140,3 +219,10 @@ export default function Home() {
     </div>
   );
 } 
+
+
+
+
+
+
+
